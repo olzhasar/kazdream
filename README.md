@@ -1,1 +1,1 @@
-# kazdream
+# Test challenge for Kazdream Technologies
