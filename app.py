@@ -1,5 +1,5 @@
 import time
-from typing import List
+from typing import List, Optional
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
@@ -32,22 +32,28 @@ def import_data():
     return {"Success": True, "Organizations added": n_orgs, "People added": n_people}
 
 
-def get_list(index):
-    res = es.search(index=index, filter_path=["hits.hits._source"],)
+def get_list(index, q):
+    if q:
+        query_body = {"query": {"query_string": {"query": q}}}
+    else:
+        query_body = None
+    res = es.search(
+        body=query_body, index=index, filter_path=["hits.hits._source"], size=10000
+    )
     records = [r["_source"] for r in res["hits"]["hits"]]
     return records
 
 
 def get_item(index, query={}):
-    res = es.search(index=index, body={"query": {"match": query}})
+    res = es.search(index=index, body={"query": {"match": query}}, size=1)
     if res["hits"]["total"]["value"] == 0:
         raise HTTPException(status_code=404, detail="Record not found")
     return res["hits"]["hits"][0]["_source"]
 
 
 @app.get("/person", response_model=List[Person])
-def person_list():
-    return get_list("person")
+def person_list(q: Optional[str] = None):
+    return get_list("person", q)
 
 
 @app.get("/person/{person_id}", response_model=Person)
@@ -56,8 +62,8 @@ def person_by_id(person_id: str):
 
 
 @app.get("/organization", response_model=List[Organization])
-def organization_list():
-    return get_list("organization")
+def organization_list(q: Optional[str] = None):
+    return get_list("organization", q)
 
 
 @app.get("/organization/{organization_id}", response_model=Organization)
