@@ -6,7 +6,7 @@ from pydantic import BaseModel
 class Person(BaseModel):
     id: str
     name: str
-    sort_name: str
+    alias: str
     email: Optional[str]
     group: Optional[str]
     group_id: Optional[str]
