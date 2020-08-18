@@ -26,7 +26,7 @@ async def elastic_error_handler(request: Request, exc: ConnectionError):
 
 @app.get("/load")
 def import_data():
-    """Import data from a csv file"""
+    """Import data from the csv file"""
 
     n_orgs, n_people = load_data(es)
     return {"Success": True, "Organizations added": n_orgs, "People added": n_people}

@@ -19,6 +19,8 @@ sudo docker-compose up --build
 
 6. Explore **person** and **organization** endpoints. Optional *q* paramater can be used for full text search. There is also an option to find a single record by id, e.g. **person/{id}**
 
+7. Browse [Neo4j Web UI](http://0.0.0.0:7474/browser/) to explore created nodes and relations
+
 
 ### Notes:
 - REST API is powered by **FastAPI Framework**
