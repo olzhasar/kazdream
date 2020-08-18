@@ -21,4 +21,4 @@ Notes:
 - REST API is powered by **FastAPI Framework**
 - Data for REST API is being loaded from Elasticsearch (due to speed and searching capabilities)
 - Replication of data to the Elasticsearch cluster was implemented purely in Python. The more robust approach would be to integrate Neo4j directly with ES. This option has not been chosen due to lack of previous experience with both technologies.
-- The whole task took about 24 hours to finish including short intros to Neo4j and ES
+- The whole task took about 10 working hours to finish including short intros to Neo4j and ES
