@@ -7,6 +7,8 @@ services:
     ports:
       - "7474:7474"
       - "7687:7687"
+    environment:
+      - NEO4J_AUTH=none
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.8.1
     hostname: elasticsearch
