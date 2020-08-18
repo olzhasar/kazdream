@@ -25,7 +25,7 @@ def load_data():
     n = 0
 
     for i, row in df.drop_duplicates("group_id").iterrows():
-        doc = row[["group_id", "group"]].to_dict()
+        doc = {"name": row["group"], "group_id": row["group_id"]}
         group = Node("Organization", **doc)
 
         es.index("organization", doc)
@@ -35,6 +35,8 @@ def load_data():
         n += 1
 
     tx.commit()
+
+    es.indices.refresh("organization")
 
     print(f"Added {n+1} organizations")
 
@@ -63,6 +65,8 @@ def load_data():
         n += 1
 
     tx.commit()
+
+    es.indices.refresh("person")
 
     print(f"Added {n+1} people records")
 
