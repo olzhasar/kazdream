@@ -11,6 +11,8 @@ NATIONALITY = "GB"
 
 def load_data(es: Elasticsearch):
     df = pd.read_csv(DATA_FILE)
+
+    df.rename(columns={"sort_name": "alias"}, inplace=True)
     df.replace({np.nan: None}, inplace=True)
 
     g = Graph("bolt://neo4j:7687")
@@ -51,7 +53,7 @@ def load_data(es: Elasticsearch):
     n_people = 0
 
     for i, row in (
-        df[["id", "name", "sort_name", "email", "group_id", "group"]]
+        df[["id", "name", "alias", "email", "group_id", "group"]]
         .drop_duplicates("id")
         .iterrows()
     ):
