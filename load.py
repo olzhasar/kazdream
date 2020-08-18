@@ -14,6 +14,12 @@ def load_data(es: Elasticsearch):
     df.replace({np.nan: None}, inplace=True)
 
     g = Graph("bolt://neo4j:7687")
+
+    # Delete existing data if present
+
+    g.delete_all()
+    es.indices.delete(index="*", ignore=[400, 404])
+
     matcher = NodeMatcher(g)
 
     # Creating organizations first
@@ -22,7 +28,7 @@ def load_data(es: Elasticsearch):
 
     n_orgs = 0
 
-    for i, row in df.drop_duplicates("group_id").iterrows():
+    for i, row in df[["group", "group_id"]].drop_duplicates("group_id").iterrows():
         doc = {"name": row["group"], "group_id": row["group_id"]}
         group = Node("Organization", **doc)
 
@@ -44,16 +50,18 @@ def load_data(es: Elasticsearch):
 
     n_people = 0
 
-    for i, row in df.drop_duplicates("id").iterrows():
-        doc = row[["id", "name", "sort_name", "email"]].to_dict()
+    for i, row in (
+        df[["id", "name", "sort_name", "email", "group_id", "group"]]
+        .drop_duplicates("id")
+        .iterrows()
+    ):
+        es.index("person", row.to_dict())
 
-        person = Node("Person", **doc, nationality=NATIONALITY)
-
-        try:
-            es.index("person", doc)
-        except:
-            print(doc)
-            print(person)
+        person = Node(
+            "Person",
+            **row.drop(["group_id", "group"]).to_dict(),
+            nationality=NATIONALITY,
+        )
 
         group = matcher.match("Organization", group_id=row["group_id"]).first()
 
