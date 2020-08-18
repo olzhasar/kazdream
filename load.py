@@ -9,20 +9,18 @@ DATA_FILE = "data.csv"
 NATIONALITY = "GB"
 
 
-def load_data():
+def load_data(es: Elasticsearch):
     df = pd.read_csv(DATA_FILE)
     df.replace({np.nan: None}, inplace=True)
 
-    g = Graph()
+    g = Graph("bolt://neo4j:7687")
     matcher = NodeMatcher(g)
-
-    es = Elasticsearch()
 
     # Creating organizations first
 
     tx = g.begin()
 
-    n = 0
+    n_orgs = 0
 
     for i, row in df.drop_duplicates("group_id").iterrows():
         doc = {"name": row["group"], "group_id": row["group_id"]}
@@ -32,19 +30,19 @@ def load_data():
 
         tx.create(group)
 
-        n += 1
+        n_orgs += 1
 
     tx.commit()
 
     es.indices.refresh("organization")
 
-    print(f"Added {n+1} organizations")
+    print(f"Added {n_orgs} organizations")
 
     # Creating people and membership records
 
     tx = g.begin()
 
-    n = 0
+    n_people = 0
 
     for i, row in df.drop_duplicates("id").iterrows():
         doc = row[["id", "name", "sort_name", "email"]].to_dict()
@@ -62,14 +60,12 @@ def load_data():
         rel = Relationship(person, "Membership", group)
         tx.create(rel)
 
-        n += 1
+        n_people += 1
 
     tx.commit()
 
     es.indices.refresh("person")
 
-    print(f"Added {n+1} people records")
+    print(f"Added {n_people+1} people records")
 
-
-if __name__ == "__main__":
-    load_data()
+    return n_orgs, n_people
