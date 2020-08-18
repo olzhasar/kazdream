@@ -66,6 +66,6 @@ def load_data(es: Elasticsearch):
 
     es.indices.refresh("person")
 
-    print(f"Added {n_people+1} people records")
+    print(f"Added {n_people} people records")
 
     return n_orgs, n_people
