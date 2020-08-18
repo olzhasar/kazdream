@@ -1,20 +1,47 @@
 import pandas as pd
-import py2neo
+from py2neo import Graph, Node, NodeMatcher, Relationship
 
-DATA_FILE = 'data.csv'
+DATA_FILE = "data.csv"
 
-NATIONALITY = 'GB'
+NATIONALITY = "GB"
 
 
 def load_data():
     df = pd.read_csv(DATA_FILE)
 
-    for i, row in df.drop_duplicates('group_id').iterrows():
-        print(row['group_id'])
+    g = Graph()
+    matcher = NodeMatcher(g)
 
-    for i, row in df.drop_duplicates('id').iterrows():
-        print(row['name'])
+    # Creating organizations first
+
+    tx = g.begin()
+
+    for i, row in df.drop_duplicates("group_id").iterrows():
+        group = Node("Organization", group_id=row["group_id"], name=row["group"])
+        tx.create(group)
+
+    tx.commit()
+
+    # Creating people and membership records
+
+    tx = g.begin()
+
+    for i, row in df.drop_duplicates("id").iterrows():
+        person = Node(
+            "Person",
+            id=row["id"],
+            name=row["name"],
+            alias=row["sort_name"],
+            email=row["email"],
+            nationality="GB",
+        )
+        group = matcher.match("Organization", group_id=row["group_id"]).first()
+
+        rel = Relationship(person, "Membership", group)
+        tx.create(rel)
+
+    tx.commit()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     load_data()
